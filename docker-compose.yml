@@ -1,0 +1,120 @@
+name: cinema-app
+
+services:
+  movie-service:
+    build:
+      context: ./movie-service
+    image: cinema/movie-service:local
+    container_name: cinema-movie-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://movie-postgres:5432/movie_service
+      SPRING_DATASOURCE_USERNAME: movie_service
+      SPRING_DATASOURCE_PASSWORD: movie_service
+    ports:
+      - "8081:8080"
+    depends_on:
+      movie-postgres:
+        condition: service_healthy
+    networks:
+      - cinema-network
+
+  reservation-service:
+    build:
+      context: ./reservation-service
+    image: cinema/reservation-service:local
+    container_name: cinema-reservation-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://reservation-postgres:5432/reservation_service
+      SPRING_DATASOURCE_USERNAME: reservation_service
+      SPRING_DATASOURCE_PASSWORD: reservation_service
+    ports:
+      - "8082:8080"
+    depends_on:
+      reservation-postgres:
+        condition: service_healthy
+    networks:
+      - cinema-network
+
+  user-service:
+    build:
+      context: ./user-service
+    image: cinema/user-service:local
+    container_name: cinema-user-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATA_MONGODB_URI: mongodb://cinema_user:cinema_user@user-mongodb:27017/user_service?authSource=admin
+    ports:
+      - "8083:8080"
+    depends_on:
+      user-mongodb:
+        condition: service_healthy
+    networks:
+      - cinema-network
+
+  movie-postgres:
+    image: postgres:17-alpine
+    container_name: cinema-movie-postgres
+    environment:
+      POSTGRES_DB: movie_service
+      POSTGRES_USER: movie_service
+      POSTGRES_PASSWORD: movie_service
+    ports:
+      - "5433:5432"
+    volumes:
+      - movie-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U movie_service -d movie_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cinema-network
+
+  reservation-postgres:
+    image: postgres:17-alpine
+    container_name: cinema-reservation-postgres
+    environment:
+      POSTGRES_DB: reservation_service
+      POSTGRES_USER: reservation_service
+      POSTGRES_PASSWORD: reservation_service
+    ports:
+      - "5434:5432"
+    volumes:
+      - reservation-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reservation_service -d reservation_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cinema-network
+
+  user-mongodb:
+    image: mongo:8-noble
+    container_name: cinema-user-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: cinema_user
+      MONGO_INITDB_ROOT_PASSWORD: cinema_user
+      MONGO_INITDB_DATABASE: user_service
+    ports:
+      - "27018:27017"
+    volumes:
+      - user-mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.adminCommand('ping').ok\" -u cinema_user -p cinema_user --authenticationDatabase admin | grep 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cinema-network
+
+networks:
+  cinema-network:
+    driver: bridge
+
+volumes:
+  movie-postgres-data:
+  reservation-postgres-data:
+  user-mongodb-data:
