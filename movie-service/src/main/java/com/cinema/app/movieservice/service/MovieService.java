@@ -20,4 +20,28 @@ public class MovieService {
     public Movie saveMovie(Movie movie) {
         return movieRepository.save(movie);
     }
+
+    public Movie updateMovie(Long id, Movie updatedMovie) {
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Movie not found"));
+
+        movie.setTitle(updatedMovie.getTitle());
+        movie.setDescription(updatedMovie.getDescription());
+        movie.setReleaseYear(updatedMovie.getReleaseYear());
+        movie.setDuration(updatedMovie.getDuration());
+        movie.setDirector(updatedMovie.getDirector());
+        movie.setRating(updatedMovie.getRating());
+        movie.setPosterUrl(updatedMovie.getPosterUrl());
+        movie.setGenres(updatedMovie.getGenres());
+
+        return movieRepository.save(movie);
+    }
+
+    public void deleteMovie(Long id) {
+        if (!movieRepository.existsById(id)) {
+            throw new IllegalArgumentException("Movie not found");
+        }
+
+        movieRepository.deleteById(id);
+    }
 }

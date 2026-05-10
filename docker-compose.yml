@@ -1,6 +1,20 @@
 name: cinema-app
 
 services:
+  frontend-service:
+    build:
+      context: ./frontend-service
+    image: cinema/frontend-service:local
+    container_name: cinema-frontend-service
+    ports:
+      - "3000:80"
+    depends_on:
+      - movie-service
+      - reservation-service
+      - user-service
+    networks:
+      - cinema-network
+
   movie-service:
     build:
       context: ./movie-service
@@ -44,7 +58,10 @@ services:
     container_name: cinema-user-service
     environment:
       SERVER_PORT: 8080
-      SPRING_DATA_MONGODB_URI: mongodb://cinema_user:cinema_user@user-mongodb:27017/user_service?authSource=admin
+      SPRING_MONGODB_URI: mongodb://cinema_user:cinema_user@user-mongodb:27017/user_service?authSource=admin
+      JWT_SECRET: cinema-app-local-development-secret-key
+      ADMIN_EMAIL: admin@cinema.local
+      ADMIN_PASSWORD: admin123
     ports:
       - "8083:8080"
     depends_on:
