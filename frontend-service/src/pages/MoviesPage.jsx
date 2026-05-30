@@ -13,7 +13,7 @@ import {
   updateMovieReview,
 } from '../services/reviewService';
 
-export function MoviesPage({ session, onLogout }) {
+export function MoviesPage({ session, onLogout, onNavigate }) {
   const [movies, setMovies] = useState([]);
   const [movieForm, setMovieForm] = useState(emptyMovie);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -223,7 +223,13 @@ export function MoviesPage({ session, onLogout }) {
 
   return (
     <main className="app-shell">
-      <DashboardHeader session={session} isAdmin={isAdmin} onLogout={onLogout} />
+      <DashboardHeader 
+        session={session} 
+        isAdmin={isAdmin} 
+        onLogout={onLogout}
+        currentPage="movies"
+        onNavigate={onNavigate}
+      />
       <AlertMessage message={error} />
 
       <section className={isAdmin ? 'workspace' : 'workspace read-only'}>

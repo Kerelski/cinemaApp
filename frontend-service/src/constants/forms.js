@@ -23,3 +23,12 @@ export const emptyReview = {
   rating: '8',
   comment: '',
 };
+
+export const emptyScreening = {
+  movieId: '',
+  startTime: '',
+  room: '',
+  price: '25',
+};
+
+export const ROOMS = ['Room 1', 'Room 2', 'Room 3', 'VIP'];
