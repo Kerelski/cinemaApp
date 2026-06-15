@@ -1,5 +1,10 @@
 import { ROOMS } from '../constants/forms';
 
+const dropdownOptionStyle = {
+  backgroundColor: '#ffffff',
+  color: '#111827',
+};
+
 export function ScreeningForm({ form, movies, editingScreeningId, saving, onChange, onCancelEdit, onSubmit }) {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -19,9 +24,9 @@ export function ScreeningForm({ form, movies, editingScreeningId, saving, onChan
       <label>
         Film
         <select name="movieId" value={form.movieId} onChange={onChange} required>
-          <option value="">Chose movie...</option>
+          <option value="" style={dropdownOptionStyle}>Chose movie...</option>
           {movies.map(movie => (
-            <option key={movie.id} value={movie.id}>
+            <option key={movie.id} value={movie.id} style={dropdownOptionStyle}>
               {movie.title}
             </option>
           ))}
@@ -44,9 +49,9 @@ export function ScreeningForm({ form, movies, editingScreeningId, saving, onChan
         <label>
           Room
           <select name="room" value={form.room} onChange={onChange} required>
-            <option value="">Choose room...</option>
+            <option value="" style={dropdownOptionStyle}>Choose room...</option>
             {ROOMS.map(room => (
-              <option key={room} value={room}>{room}</option>
+              <option key={room} value={room} style={dropdownOptionStyle}>{room}</option>
             ))}
           </select>
         </label>

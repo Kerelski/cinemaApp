@@ -125,7 +125,7 @@ export function ScreeningsPage({ session, onLogout, onNavigate }) {
 
   function handleReservationSuccess() {
     setSelectedScreening(null);
-    onNavigate('reservations');
+    onNavigate('cart');
   }
 
   return (

@@ -61,7 +61,6 @@ export function LoginPage({ onSessionCreated }) {
         <div>
           <p className="eyebrow">Cinema App</p>
           <h1>Sign in</h1>
-          <p className="summary">Access the cinema dashboard with role-based movie management.</p>
         </div>
 
         <AuthTabs activeMode={authMode} onModeChange={setAuthMode} />

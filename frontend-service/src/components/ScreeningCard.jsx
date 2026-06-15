@@ -15,7 +15,23 @@ export function ScreeningCard({ screening, onBook }) {
   };
 
   return (
-    <article className="screening-card">
+    <article
+      className="screening-card"
+      role="button"
+      tabIndex={0}
+      onClick={() => onBook(screening)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onBook(screening);
+        }
+      }}
+    >
+      {screening.moviePosterUrl ? (
+        <img className="screening-poster" src={screening.moviePosterUrl} alt="" />
+      ) : (
+        <div className="screening-poster placeholder">{screening.movieTitle?.slice(0, 1) || 'C'}</div>
+      )}
       <div className="screening-time">
         <span className="date">{formatDate(startTime)}</span>
         <span className="time">{formatTime(startTime)}</span>
@@ -32,7 +48,14 @@ export function ScreeningCard({ screening, onBook }) {
           <span className="movie-title">{screening.movieTitle}</span>
         )}
       </div>
-      <button type="button" className="compact" onClick={() => onBook(screening)}>
+      <button
+        type="button"
+        className="compact"
+        onClick={(event) => {
+          event.stopPropagation();
+          onBook(screening);
+        }}
+      >
         Reserve
       </button>
     </article>

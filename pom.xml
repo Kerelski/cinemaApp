@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.2</version>
+        <version>4.0.6</version>
         <relativePath/>
     </parent>
 
@@ -20,6 +20,7 @@
         <module>movie-service</module>
         <module>reservation-service</module>
         <module>user-service</module>
+        <module>cart-service</module>
     </modules>
 
     <properties>

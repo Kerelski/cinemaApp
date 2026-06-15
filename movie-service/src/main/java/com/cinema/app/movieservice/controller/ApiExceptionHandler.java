@@ -2,6 +2,7 @@ package com.cinema.app.movieservice.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,6 +24,11 @@ public class ApiExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .orElse("Invalid request");
         return buildResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException exception) {
+        return buildResponse(HttpStatus.CONFLICT, "Movie cannot be deleted while it has assigned screenings.");
     }
 
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message) {

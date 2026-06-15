@@ -2,13 +2,14 @@ export function DashboardHeader({ session, isAdmin, onLogout, currentPage, onNav
   const pages = [
     { id: 'movies', label: 'Movies' },
     { id: 'screenings', label: 'Screenings' },
-    { id: 'reservations', label: 'Reservations' },
   ];
 
   const getPageTitle = () => {
     switch (currentPage) {
       case 'screenings':
         return 'Screenings';
+      case 'cart':
+        return 'Cart';
       case 'reservations':
         return 'Reservations';
       default:
@@ -20,14 +21,16 @@ export function DashboardHeader({ session, isAdmin, onLogout, currentPage, onNav
     switch (currentPage) {
       case 'screenings':
         return isAdmin
-            ? 'Administrator account: manage screenings and add new ones.'
+            ? 'Manage screenings and add new ones.'
             : 'Browse available screenings and reserve seats.';
+      case 'cart':
+        return 'Review selected seats and create reservations.';
       case 'reservations':
         return 'View and manage your reservations.';
       default:
         return isAdmin
-            ? 'Administrator account: full management of the movie catalog.'
-            : 'User account: browse the movie catalog in read-only mode.';
+            ? 'Manage movies in the catalog.'
+            : 'Browse the movie catalog in read-only mode.';
     }
   };
 
@@ -52,11 +55,29 @@ export function DashboardHeader({ session, isAdmin, onLogout, currentPage, onNav
         </nav>
       </div>
       <div className="account-box">
-        <span>{session.user.email}</span>
-        <strong>{isAdmin ? 'ADMIN' : 'UZYTKOWNIK'}</strong>
-        <button type="button" className="secondary" onClick={onLogout}>
-          Logout
-        </button>
+        <div className="account-meta">
+          <span>{session.user.email}</span>
+          <strong>{isAdmin ? 'ADMIN' : 'UZYTKOWNIK'}</strong>
+        </div>
+        <div className="account-actions">
+          <button
+            type="button"
+            className={`account-nav ${currentPage === 'cart' ? 'active' : ''}`}
+            onClick={() => onNavigate('cart')}
+          >
+            Cart
+          </button>
+          <button
+            type="button"
+            className={`account-nav ${currentPage === 'reservations' ? 'active' : ''}`}
+            onClick={() => onNavigate('reservations')}
+          >
+            My reservations
+          </button>
+          <button type="button" className="secondary" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
       </div>
     </section>
   );

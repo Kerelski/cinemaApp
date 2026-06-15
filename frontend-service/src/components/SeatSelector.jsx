@@ -47,6 +47,7 @@ export function SeatSelector({ seats, selectedSeats, onSeatToggle, maxSeats = 10
                   
                   return (
                     <button
+                      type="button"
                       key={seat.seatNumber}
                       className={seatClass}
                       onClick={() => handleSeatClick(seat)}

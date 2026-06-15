@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SeatSelector } from './SeatSelector';
-import { getScreeningSeats, createReservation } from '../services/reservationService';
+import { addCartItem } from '../services/cartService';
+import { getScreeningSeats } from '../services/reservationService';
 
 export function ReservationModal({ screening, session, onClose, onSuccess }) {
   const [seats, setSeats] = useState([]);
@@ -50,15 +51,18 @@ export function ReservationModal({ screening, session, onClose, onSuccess }) {
     setError('');
 
     try {
-      await createReservation({
-        screeningId: screening.id,
-        movieId: screening.movieId,
-        movieTitle: screening.movieTitle,
-        screeningTime: screening.startTime,
-        room: screening.room,
-        pricePerSeat: pricePerSeat,
-        seatNumbers: selectedSeats,
-      }, session);
+      for (const seatNumber of selectedSeats) {
+        await addCartItem({
+          screeningId: screening.id,
+          seatNumber,
+          movieId: screening.movieId,
+          movieTitle: screening.movieTitle,
+          moviePosterUrl: screening.moviePosterUrl,
+          screeningTime: screening.startTime,
+          room: screening.room,
+          price: pricePerSeat,
+        }, session);
+      }
       
       onSuccess();
     } catch (err) {
@@ -82,6 +86,9 @@ export function ReservationModal({ screening, session, onClose, onSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
+          {screening.moviePosterUrl && (
+            <img className="modal-poster" src={screening.moviePosterUrl} alt="" />
+          )}
           <div>
             <h2>Seat reservation</h2>
             <p className="muted">{screening.movieTitle}</p>
@@ -137,7 +144,7 @@ export function ReservationModal({ screening, session, onClose, onSuccess }) {
                 type="submit" 
                 disabled={submitting || selectedSeats.length === 0}
               >
-                {submitting ? 'Reserving...' : 'Reserve'}
+                {submitting ? 'Adding...' : 'Add to cart'}
               </button>
             </div>
           </form>

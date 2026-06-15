@@ -3,6 +3,7 @@ import { LoginPage } from './pages/LoginPage';
 import { MoviesPage } from './pages/MoviesPage';
 import { ScreeningsPage } from './pages/ScreeningsPage';
 import { ReservationsPage } from './pages/ReservationsPage';
+import { CartPage } from './pages/CartPage';
 import { clearStoredSession, getStoredSession, storeSession } from './services/sessionStorage';
 
 export function App() {
@@ -37,6 +38,8 @@ export function App() {
   switch (currentPage) {
     case 'screenings':
       return <ScreeningsPage {...pageProps} />;
+    case 'cart':
+      return <CartPage {...pageProps} />;
     case 'reservations':
       return <ReservationsPage {...pageProps} />;
     default:

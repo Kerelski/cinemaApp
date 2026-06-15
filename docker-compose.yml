@@ -12,6 +12,25 @@ services:
       - movie-service
       - reservation-service
       - user-service
+      - cart-service
+    networks:
+      - cinema-network
+
+  cart-service:
+    build:
+      context: .
+      dockerfile: cart-service/Dockerfile
+    image: cinema/cart-service:local
+    container_name: cinema-cart-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATA_REDIS_HOST: cart-redis
+      SPRING_DATA_REDIS_PORT: 6379
+    ports:
+      - "8084:8080"
+    depends_on:
+      cart-redis:
+        condition: service_healthy
     networks:
       - cinema-network
 
@@ -43,10 +62,14 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://reservation-postgres:5432/reservation_service
       SPRING_DATASOURCE_USERNAME: reservation_service
       SPRING_DATASOURCE_PASSWORD: reservation_service
+      SPRING_DATA_REDIS_HOST: cart-redis
+      SPRING_DATA_REDIS_PORT: 6379
     ports:
       - "8082:8080"
     depends_on:
       reservation-postgres:
+        condition: service_healthy
+      cart-redis:
         condition: service_healthy
     networks:
       - cinema-network
@@ -127,6 +150,21 @@ services:
     networks:
       - cinema-network
 
+  cart-redis:
+    image: redis:7.4-alpine
+    container_name: cinema-cart-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - cart-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cinema-network
+
 networks:
   cinema-network:
     driver: bridge
@@ -135,3 +173,4 @@ volumes:
   movie-postgres-data:
   reservation-postgres-data:
   user-mongodb-data:
+  cart-redis-data:

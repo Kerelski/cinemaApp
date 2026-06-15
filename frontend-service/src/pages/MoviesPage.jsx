@@ -4,6 +4,8 @@ import { DashboardHeader } from '../components/DashboardHeader';
 import { MovieForm } from '../components/MovieForm';
 import { MovieList } from '../components/MovieList';
 import { MovieReviewsPanel } from '../components/MovieReviewsPanel';
+import { ReservationModal } from '../components/ReservationModal';
+import { ScreeningCard } from '../components/ScreeningCard';
 import { emptyMovie, emptyReview } from '../constants/forms';
 import { createMovie, deleteMovie, getMovies, updateMovie } from '../services/movieService';
 import {
@@ -12,11 +14,15 @@ import {
   getMovieReviews,
   updateMovieReview,
 } from '../services/reviewService';
+import { getUpcomingScreenings } from '../services/screeningService';
 
 export function MoviesPage({ session, onLogout, onNavigate }) {
   const [movies, setMovies] = useState([]);
   const [movieForm, setMovieForm] = useState(emptyMovie);
+  const [screenings, setScreenings] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedScreening, setSelectedScreening] = useState(null);
+  const [selectedScheduleDate, setSelectedScheduleDate] = useState('');
   const [reviews, setReviews] = useState([]);
   const [reviewForm, setReviewForm] = useState(emptyReview);
   const [editingMovieId, setEditingMovieId] = useState(null);
@@ -33,6 +39,31 @@ export function MoviesPage({ session, onLogout, onNavigate }) {
     return [...movies].sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
   }, [movies]);
 
+  const weekDays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() + index);
+      return date;
+    });
+  }, []);
+
+  const weeklyScreenings = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+
+    return screenings
+      .filter((screening) => {
+        const startTime = new Date(screening.startTime);
+        const screeningDate = toDateKey(startTime);
+        return startTime >= today && startTime < nextWeek
+          && (!selectedScheduleDate || screeningDate === selectedScheduleDate);
+      })
+      .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+  }, [screenings, selectedScheduleDate]);
+
   useEffect(() => {
     loadMovies();
   }, []);
@@ -42,7 +73,12 @@ export function MoviesPage({ session, onLogout, onNavigate }) {
     setError('');
 
     try {
-      setMovies(await getMovies(session));
+      const [moviesData, screeningsData] = await Promise.all([
+        getMovies(session),
+        getUpcomingScreenings(session),
+      ]);
+      setMovies(moviesData);
+      setScreenings(screeningsData);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -221,6 +257,29 @@ export function MoviesPage({ session, onLogout, onNavigate }) {
     setReviewForm((currentForm) => ({ ...currentForm, [name]: value }));
   }
 
+  function handleBookScreening(screening) {
+    setSelectedScreening(screening);
+  }
+
+  function handleReservationSuccess() {
+    setSelectedScreening(null);
+    onNavigate('cart');
+  }
+
+  function toDateKey(date) {
+    const localDate = new Date(date);
+    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+    return localDate.toISOString().slice(0, 10);
+  }
+
+  function formatScheduleDay(date) {
+    return date.toLocaleDateString('pl-PL', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+  }
+
   return (
     <main className="app-shell">
       <DashboardHeader 
@@ -255,6 +314,62 @@ export function MoviesPage({ session, onLogout, onNavigate }) {
         />
       </section>
 
+      <section className="weekly-schedule">
+        <div className="list-header">
+          <div>
+            <h2>This week's schedule</h2>
+            <p className="muted">Choose a screening to open seat selection.</p>
+          </div>
+          <button type="button" className="ghost compact" onClick={loadMovies} disabled={loading}>
+            {loading ? 'Loading...' : 'Refresh'}
+          </button>
+        </div>
+
+        <div className="date-filter">
+          <button
+            type="button"
+            className={!selectedScheduleDate ? 'date-chip active' : 'date-chip'}
+            onClick={() => setSelectedScheduleDate('')}
+          >
+            All week
+          </button>
+          {weekDays.map((date) => {
+            const dateKey = toDateKey(date);
+            return (
+              <button
+                key={dateKey}
+                type="button"
+                className={selectedScheduleDate === dateKey ? 'date-chip active' : 'date-chip'}
+                onClick={() => setSelectedScheduleDate(dateKey)}
+              >
+                {formatScheduleDay(date)}
+              </button>
+            );
+          })}
+        </div>
+
+        {loading ? (
+          <p className="muted">Loading schedule...</p>
+        ) : weeklyScreenings.length === 0 ? (
+          <div className="empty-state">
+            <p>No screenings found for the selected date.</p>
+            <button type="button" onClick={() => onNavigate('screenings')}>
+              See all screenings
+            </button>
+          </div>
+        ) : (
+          <div className="home-screenings-grid">
+            {weeklyScreenings.map((screening) => (
+              <ScreeningCard
+                key={screening.id}
+                screening={screening}
+                onBook={handleBookScreening}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
       {selectedMovie && (
         <section className="reviews-drawer">
           <div className="form-title">
@@ -280,6 +395,15 @@ export function MoviesPage({ session, onLogout, onNavigate }) {
             onDeleteReview={handleDeleteReview}
           />
         </section>
+      )}
+
+      {selectedScreening && (
+        <ReservationModal
+          screening={selectedScreening}
+          session={session}
+          onClose={() => setSelectedScreening(null)}
+          onSuccess={handleReservationSuccess}
+        />
       )}
     </main>
   );
