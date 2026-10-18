@@ -635,13 +635,13 @@ select {
 }
 
 .seat-example.available {
-  background: #e8eef0;
-  border: 2px solid #cbd8dc;
+  background: #22333b;
+  border: 2px solid #22333b;
 }
 
 .seat-example.selected {
-  background: #0d5c63;
-  border: 2px solid #0d5c63;
+  background: #f2b84b;
+  border: 2px solid #f2b84b;
 }
 
 .seat-example.reserved {

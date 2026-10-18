@@ -7,7 +7,7 @@ import { MovieReviewsPanel } from '../components/MovieReviewsPanel';
 import { ReservationModal } from '../components/ReservationModal';
 import { ScreeningCard } from '../components/ScreeningCard';
 import { emptyMovie, emptyReview } from '../constants/forms';
-import { createMovie, deleteMovie, getMovies, updateMovie } from '../services/movieService';
+import { createMovie, deleteMovie, getMovies, updateMovie, generateMovieDescription } from '../services/movieService';
 import {
   createMovieReview,
   deleteMovieReview,
@@ -19,6 +19,7 @@ import { getUpcomingScreenings } from '../services/screeningService';
 export function MoviesPage({ session, onLogout, onNavigate }) {
   const [movies, setMovies] = useState([]);
   const [movieForm, setMovieForm] = useState(emptyMovie);
+  const [generatingDescription, setGeneratingDescription] = useState(false);
   const [screenings, setScreenings] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [selectedScreening, setSelectedScreening] = useState(null);
@@ -98,6 +99,30 @@ export function MoviesPage({ session, onLogout, onNavigate }) {
       setError(requestError.message);
     } finally {
       setReviewsLoading(false);
+    }
+  }
+
+  async function handleGenerateDescription() {
+    if (!movieForm.title) {
+      setError('Podaj przynajmniej tytuł filmu, aby wygenerować opis.');
+      return;
+    }
+
+    setGeneratingDescription(true);
+    setError('');
+
+    try {
+      const data = await generateMovieDescription(movieForm, session);
+      if (data?.description) {
+        setMovieForm((prevForm) => ({
+          ...prevForm,
+          description: data.description,
+        }));
+      }
+    } catch (requestError) {
+      setError(`Błąd generowania opisu: ${requestError.message}`);
+    } finally {
+      setGeneratingDescription(false);
     }
   }
 
@@ -300,6 +325,8 @@ export function MoviesPage({ session, onLogout, onNavigate }) {
             onChange={updateMovieField}
             onCancelEdit={cancelEdit}
             onSubmit={handleMovieSubmit}
+            generatingDescription={generatingDescription}
+            onGenerateDescription={handleGenerateDescription}
           />
         )}
 

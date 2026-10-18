@@ -27,6 +27,18 @@ export function deleteMovie(movieId, session) {
   });
 }
 
+export function generateMovieDescription(movieDetails, session) {
+  return apiRequest('/api/movies/ai/generate-description', {
+    method: 'POST',
+    body: {
+      title: movieDetails.title,
+      releaseYear: movieDetails.releaseYear ? Number(movieDetails.releaseYear) : null,
+      director: movieDetails.director,
+    },
+    session,
+  });
+}
+
 function normalizeMoviePayload(movie) {
   return {
     ...movie,
